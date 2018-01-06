@@ -49,6 +49,8 @@
         var kidoku = $.cookie("kidoku");
         var dst = $(".watch"); // 配信期間：～～～～ の前後にボタン等を追加する
 
+        // /goods/* のスクリプトではあるが、検索結果など他のページで
+        // kidoku を使いたいのでルートへ登録
         var set_cookie = function(array) {
             $.cookie("kidoku", JSON.stringify(array), {path: "/"});
         };
