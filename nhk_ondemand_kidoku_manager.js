@@ -50,7 +50,7 @@
         var dst = $(".watch"); // 配信期間：～～～～ の前後にボタン等を追加する
 
         var set_cookie = function(array) {
-            $.cookie("kidoku", JSON.stringify(array), {path: "/goods/"});
+            $.cookie("kidoku", JSON.stringify(array), {path: "/"});
         };
 
         kidoku = kidoku === undefined ? Array() : JSON.parse(kidoku);
