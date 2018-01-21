@@ -1,0 +1,81 @@
+// ==UserScript==
+// @name         NHK Ondemand Kidoku Indicator on List
+// @namespace    https://www.nhk-ondemand.jp/
+// @version      1.0
+// @description  NHKオンデマンドの一覧系画面に既読/未読を表示するUserScript（Chrome/Tampermonkey用）。「NHK Ondemand Kidoku Manager」とセットで使い、個別画面で「既読」にマークしたものに「既読」と表示する。リスト表示にだけ対応、サムネイル表示では動作しない。
+// @author       @rakousan / rakou1986
+// @match        https://www.nhk-ondemand.jp/share/*
+// @grant        none
+// @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js
+// ==/UserScript==
+
+// MIT License
+//
+// Copyright (c) 2018 @rakousan
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+(function() {
+    'use strict';
+    $(document).ready(function() {
+        var hash_goods_indicator = {};
+
+        var update_hash = function(goods_id) {
+            var kidoku = $.cookie("kidoku");
+            kidoku = kidoku === undefined ? Array() : JSON.parse(kidoku);
+            var indicator;
+            if (goods_id in hash_goods_indicator) {
+                indicator = hash_goods_indicator[goods_id];
+            } else {
+                indicator = $("<strong class='kidoku'>");
+            }
+            hash_goods_indicator[goods_id] = indicator;
+            if (kidoku.indexOf(goods_id) != -1) {
+                indicator.text("[既読] ").css("color", "blue");
+            } else {
+                indicator.text("[未読] ").css("color", "lightgray");
+            }
+        };
+
+        var get_goods_id = function(href) {
+            var re = RegExp("goods\/.*\/");
+            return re.exec(href)[0].replace("goods/", "").replace("/", "");
+
+        };
+
+        var update_indicator = function(initialize) {
+            if (initialize) {
+                clearInterval(initialize_interval_ID);
+            }
+            var do_not_prepend = $(".kidoku").length !== 0 ? true : false;
+            var href_idx = do_not_prepend === true ? 1 : 0;
+            $(".movieItemContent").find(".notes").each(function(){
+                var h2 = this.children[0];
+                var goods_id = get_goods_id(h2.children[href_idx].href);
+                update_hash(goods_id);
+                if ( !do_not_prepend ) {
+                    $(h2).prepend( hash_goods_indicator[goods_id] );
+                }
+            });
+        };
+
+        var initialize_interval_ID = setInterval(update_indicator, 1000, true);
+        var update_interval_ID = setInterval(update_indicator, 5000, false);
+    });
+})();
