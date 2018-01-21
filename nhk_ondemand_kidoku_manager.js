@@ -46,7 +46,12 @@
         var kidoku_str = "これは既読です";
         var midoku_str = "これは未読です";
 
+        var import_button = $("<button id='import_button' style='margin:4px; padding:4px;'>インポート</button>");
+        var export_button = $("<button id='export_button' style='margin:4px; padding:4px;'>エクスポート</button>");
+        var cookie_textbox = $("<input id='cookie_textbox' type='text' style='margin:4px; padding:4px;' />");
+
         var kidoku = $.cookie("kidoku");
+
         var dst = $(".watch"); // 配信期間：～～～～ の前後にボタン等を追加する
 
         // /goods/* のスクリプトではあるが、検索結果など他のページで
@@ -55,17 +60,35 @@
             $.cookie("kidoku", JSON.stringify(array), {path: "/"});
         };
 
+        var set_status = function(kidoku_) {
+            if (kidoku_) {
+                status.text(kidoku_str);
+                status.css("color", "blue");
+            } else {
+                status.text(midoku_str);
+                status.css("color", "lightgray");
+            }
+        };
+
+        var flash_msg = function(text) {
+            msg.text(text).fadeIn(300).delay(3000).fadeOut(300);
+        };
+
         kidoku = kidoku === undefined ? Array() : JSON.parse(kidoku);
         // noop: undefinedを捨てるwarningの回避用
-        var noop = kidoku.indexOf(goods_id) != -1 ? status.text(kidoku_str) : status.text(midoku_str);
+        var status_initializer = function() {
+            var noop = kidoku.indexOf(goods_id) != -1 ? set_status(true) : set_status(false);
+        };
+
+        status_initializer();
 
         mita.click(function(){
             if (kidoku.indexOf(goods_id) == -1) {
                 kidoku.push(goods_id);
             }
             set_cookie(kidoku);
-            msg.text(kidoku_msg).fadeIn(300).delay(3000).fadeOut(300);
-            status.text(kidoku_str);
+            flash_msg(kidoku_msg);
+            set_status(true);
         });
 
         mitenai.click(function(){
@@ -74,11 +97,41 @@
                 kidoku.splice(idx, 1);
             }
             set_cookie(kidoku);
-            msg.text(midoku_msg).fadeIn(300).delay(3000).fadeOut(300);
-            status.text(midoku_str);
+            flash_msg(midoku_msg);
+            set_status(false);
+        });
+
+        export_button.click(function(){
+            $.when(cookie_textbox.val($.cookie("kidoku"))).done(cookie_textbox.select());
+            flash_msg("コピーでエクスポート");
+        });
+
+        import_button.click(function(){
+            if( confirm("インポートを実行しますか？（既読管理データを丸ごと入れ替えます）")) {
+                var array_ = undefined;
+                try {
+                    array_ = JSON.parse( cookie_textbox.val() );
+                } catch(e) {
+                    alert("インポートをキャンセルしました。データ形式が誤っています。");
+                }
+                if (array_ !== undefined) {
+                    kidoku = array_;
+                    set_cookie(kidoku);
+                    status_initializer();
+                    alert("インポートしました。");
+                }
+            } else {
+                alert("インポートをキャンセルしました。");
+            }
         });
 
         msg.hide();
+        dst.prepend(import_button);
+        dst.prepend( $("<strong>→</strong>") );
+        dst.prepend(cookie_textbox);
+        dst.prepend( $("<strong>→</strong>") );
+        dst.prepend(export_button);
+        dst.prepend($("<br>"));
         dst.prepend(msg);
         dst.prepend(mitenai);
         dst.prepend(mita);
