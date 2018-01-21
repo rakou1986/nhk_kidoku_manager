@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NHK Ondemand Kidoku Manager
 // @namespace    https://www.nhk-ondemand.jp/
-// @version      1.0
+// @version      1.1
 // @description  NHKオンデマンドのCookieに独自のキーkidokuを追加して既読を管理するUserScript（Chrome/Tampermonkey用）
 // @author       @rakousan / rakou1986
 // @match        https://www.nhk-ondemand.jp/goods/*
