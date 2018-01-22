@@ -113,14 +113,13 @@
 
         import_button.click(function(){
             if( confirm("インポートを実行しますか？（既読管理データを丸ごと入れ替えます）")) {
-                var array_ = undefined;
+                var kidoku;
                 try {
-                    array_ = JSON.parse( cookie_textbox.val() );
+                    kidoku = JSON.parse( cookie_textbox.val() );
                 } catch(e) {
                     alert("インポートをキャンセルしました。データ形式が誤っています。");
                 }
-                if (array_ !== undefined) {
-                    kidoku = array_;
+                if (kidoku !== undefined) {
                     set_cookie(kidoku);
                     status_initializer();
                     alert("インポートしました。");
