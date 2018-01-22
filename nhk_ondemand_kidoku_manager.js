@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NHK Ondemand Kidoku Manager
 // @namespace    https://www.nhk-ondemand.jp/
-// @version      1.1
+// @version      1.2
 // @description  NHKオンデマンドのCookieに独自のキーkidokuを追加して既読を管理するUserScript（Chrome/Tampermonkey用）
 // @author       @rakousan / rakou1986
 // @match        https://www.nhk-ondemand.jp/goods/*
@@ -50,8 +50,6 @@
         var export_button = $("<button id='export_button' style='margin:4px; padding:4px;'>エクスポート</button>");
         var cookie_textbox = $("<input id='cookie_textbox' type='text' style='margin:4px; padding:4px;' />");
 
-        var kidoku = $.cookie("kidoku");
-
         var dst = $(".watch"); // 配信期間：～～～～ の前後にボタン等を追加する
 
         // /goods/* のスクリプトではあるが、検索結果など他のページで
@@ -74,15 +72,21 @@
             msg.text(text).fadeIn(300).delay(3000).fadeOut(300);
         };
 
-        kidoku = kidoku === undefined ? Array() : JSON.parse(kidoku);
+        var get_kidoku = function() {
+            var kidoku = $.cookie("kidoku");
+            return kidoku === undefined ? Array() : JSON.parse(kidoku);
+        };
+
         // noop: undefinedを捨てるwarningの回避用
         var status_initializer = function() {
+            var kidoku = get_kidoku();
             var noop = kidoku.indexOf(goods_id) != -1 ? set_status(true) : set_status(false);
         };
 
         status_initializer();
 
         mita.click(function(){
+            var kidoku = get_kidoku();
             if (kidoku.indexOf(goods_id) == -1) {
                 kidoku.push(goods_id);
             }
@@ -92,6 +96,7 @@
         });
 
         mitenai.click(function(){
+            var kidoku = get_kidoku();
             var idx = kidoku.indexOf(goods_id);
             if (idx != -1) {
                 kidoku.splice(idx, 1);
